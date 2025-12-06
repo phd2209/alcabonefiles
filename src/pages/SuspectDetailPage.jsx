@@ -399,9 +399,9 @@ export default function SuspectDetailPage({ walletAddress, onBack, cachedNFTs, o
                   />
                 )}
 
-                <div className="flex justify-around max-w-4xl mx-auto gap-8">
+                <div className="flex justify-around max-w-4xl mx-auto gap-4 md:gap-8">
                   {row.map((soldierBlock, blockIndex) => (
-                    <div key={`block-${rowIndex}-${blockIndex}`} className="flex-1 max-w-xs relative">
+                    <div key={`block-${rowIndex}-${blockIndex}`} className="flex-1 max-w-xs relative min-w-0">
                       {soldierBlock.length > 0 && (
                         <>
                           {/* Vertical line down from lieutenant (only first row) */}
@@ -409,25 +409,26 @@ export default function SuspectDetailPage({ walletAddress, onBack, cachedNFTs, o
                             <div className="absolute left-1/2 w-0.5 h-3 bg-rust-red" style={{ top: '-10px', transform: 'translateX(-50%)' }} />
                           )}
 
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-3 gap-1.5 md:gap-3">
                             {soldierBlock.map((nft, solIndex) => (
                               <motion.div
                                 key={nft.identifier}
-                                className="paper-texture rounded-lg p-2 border border-burnt-shadow evidence-shadow"
+                                className="paper-texture rounded-lg p-1 md:p-2 border border-burnt-shadow evidence-shadow min-w-0"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 0.7 + (rowIndex * 0.3 + blockIndex * 0.2 + solIndex * 0.05)}}
                                 whileHover={{ scale: 1.1, zIndex: 10 }}
                               >
-                                <div className="bg-off-white p-1 shadow">
+                                <div className="bg-off-white p-0.5 md:p-1 shadow">
                                   <div className="bg-noir-black aspect-square flex items-center justify-center overflow-hidden">
                                     <img
                                       src={extractOpenSeaImage(nft)}
                                       alt={`Soldier ${solIndex + 1}`}
                                       className="w-full h-full object-cover"
+                                      loading="lazy"
                                     />
                                   </div>
-                                  <div className="font-typewriter text-noir-black text-center mt-1" style={{ fontSize: '0.55rem' }}>
+                                  <div className="font-typewriter text-noir-black text-center mt-0.5 md:mt-1 text-[0.5rem] md:text-[0.65rem] leading-tight break-all">
                                     #{nft.identifier}
                                   </div>
                                 </div>
