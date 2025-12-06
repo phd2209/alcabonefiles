@@ -399,9 +399,9 @@ export default function SuspectDetailPage({ walletAddress, onBack, cachedNFTs, o
                   />
                 )}
 
-                <div className="flex justify-around max-w-4xl mx-auto gap-4 md:gap-8">
+                <div className="flex justify-center max-w-4xl mx-auto gap-4 md:gap-8">
                   {row.map((soldierBlock, blockIndex) => (
-                    <div key={`block-${rowIndex}-${blockIndex}`} className="flex-1 max-w-xs relative min-w-0">
+                    <div key={`block-${rowIndex}-${blockIndex}`} className="w-[28%] md:w-[30%] max-w-xs relative min-w-0">
                       {soldierBlock.length > 0 && (
                         <>
                           {/* Vertical line down from lieutenant (only first row) */}
