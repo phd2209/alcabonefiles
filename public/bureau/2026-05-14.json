@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-05-14T12:05:42.626Z",
+  "sections": {
+    "briefing": {
+      "tier": 1,
+      "title": "MORNING BRIEFING",
+      "source": "briefing",
+      "updated_at": "2026-05-14T12:05:42.625Z",
+      "date": "2026-05-14",
+      "bureau_index": 42,
+      "band": "yellow",
+      "band_label": "YELLOW — NEUTRAL ZONE",
+      "investigation_open": false,
+      "composite_suspended": false,
+      "composite_redistributed": false,
+      "headline": "Bureau 7d vol ▼5.4%; F&G 34 (fear).",
+      "report_card": [
+        {
+          "id": "liquidity",
+          "label": "LIQUIDITY",
+          "score": 43,
+          "band": "yellow",
+          "suspended": false
+        },
+        {
+          "id": "sentiment",
+          "label": "SENTIMENT",
+          "score": 40,
+          "band": "yellow",
+          "suspended": false
+        }
+      ],
+      "kris": [
+        {
+          "id": "kri_1_nft_floor_cap_d7d",
+          "label": "KRI #1 — NFT floor cap Δ7d (top 250)",
+          "value_display": "-1.1%",
+          "score": 47,
+          "qtl_breached": false,
+          "missing": false
+        },
+        {
+          "id": "kri_3_eth_usd_divergence",
+          "label": "KRI #3 — ETH vs USD floor divergence",
+          "value_display": "-0.7 pp",
+          "score": 46,
+          "qtl_breached": false,
+          "missing": false
+        },
+        {
+          "id": "fear_greed",
+          "label": "Fear & Greed",
+          "value_display": "34 (fear)",
+          "score": 34,
+          "qtl_breached": false,
+          "missing": false
+        },
+        {
+          "id": "kri_2_unique_buyers_d7d",
+          "label": "KRI #2 — unique buyers Δ7d (Bureau-tracked, n=7)",
+          "value_display": "-5.6%",
+          "score": 41,
+          "qtl_breached": false,
+          "missing": false
+        },
+        {
+          "id": "kri_6_bureau_volume_d7d",
+          "label": "KRI #6 — Bureau NFT volume Δ7d (n=7)",
+          "value_display": "-5.4%",
+          "score": 41,
+          "qtl_breached": false,
+          "missing": false
+        }
+      ],
+      "wanted_board": [
+        {
+          "slug": "thealcabones",
+          "display": "AlCabone",
+          "is_hq": true,
+          "image": "https://i2c.seadn.io/ethereum/1707ffe4293f4094b3953a1f9f38e48c/5616447a381430027704730d941ce9/b05616447a381430027704730d941ce9.jpeg",
+          "floor_eth": 0.002444,
+          "floor_display": "0.0024",
+          "vol_7d_eth": 0.024,
+          "sales_7d": 22,
+          "unique_buyers_7d": 3
+        },
+        {
+          "slug": "boredapeyachtclub",
+          "display": "BAYC",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/collection/boredapeyachtclub/image/1a09c26b1c30427b26944c47fc7bb9/d81a09c26b1c30427b26944c47fc7bb9.png",
+          "floor_eth": 9.8989999999999,
+          "floor_display": "9.90",
+          "vol_7d_eth": 965.722,
+          "sales_7d": 90,
+          "unique_buyers_7d": 74
+        },
+        {
+          "slug": "cryptopunks",
+          "display": "Punks",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/ethereum/41f13fa2cbb64d908a9add3243345bbc/f092b6ebf5bbfaca498a6135cad5a8/4bf092b6ebf5bbfaca498a6135cad5a8.png",
+          "floor_eth": 29.689,
+          "floor_display": "29.7",
+          "vol_7d_eth": 623.6,
+          "sales_7d": 17,
+          "unique_buyers_7d": 15
+        },
+        {
+          "slug": "pudgypenguins",
+          "display": "Pudgy",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/collection/pudgypenguins/image/f489fb69fd11886b468c0f7ff1376c/cdf489fb69fd11886b468c0f7ff1376c.png",
+          "floor_eth": 5.02299999,
+          "floor_display": "5.02",
+          "vol_7d_eth": 405.346,
+          "sales_7d": 76,
+          "unique_buyers_7d": 50
+        },
+        {
+          "slug": "world-of-women-nft",
+          "display": "WoW",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/admin-uploads/20e55f17e6d30cc82f8fcd35347339/e320e55f17e6d30cc82f8fcd35347339.png",
+          "floor_eth": 0.13099999990000022,
+          "floor_display": "0.13",
+          "vol_7d_eth": 1.836,
+          "sales_7d": 12,
+          "unique_buyers_7d": 8
+        },
+        {
+          "slug": "azuki",
+          "display": "Azuki",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/collection/azuki/image/d62d4b9df96c961712b03f41c4231c/4dd62d4b9df96c961712b03f41c4231c.jpeg",
+          "floor_eth": 1.0585,
+          "floor_display": "1.06",
+          "vol_7d_eth": 103.132,
+          "sales_7d": 95,
+          "unique_buyers_7d": 72
+        },
+        {
+          "slug": "moonbirds",
+          "display": "Moonbirds",
+          "is_hq": false,
+          "image": "https://i2c.seadn.io/admin-uploads/8a589d8d6f4e5ffd1200a47be25783/678a589d8d6f4e5ffd1200a47be25783.png",
+          "floor_eth": 0.789999,
+          "floor_display": "0.79",
+          "vol_7d_eth": 55.176,
+          "sales_7d": 68,
+          "unique_buyers_7d": 42
+        }
+      ],
+      "macro": {
+        "btc_usd": 79299,
+        "btc_change_24h": -2.19,
+        "eth_usd": 2248.74,
+        "eth_change_24h": -2.16,
+        "total_mcap_usd": 2722790611584.1064,
+        "mcap_change_24h": -2.39,
+        "btc_dominance": 58.1,
+        "eth_dominance": 9.9,
+        "nft_floor_cap_usd": 2329521574,
+        "fear_greed": 34,
+        "fear_greed_label": "Fear"
+      },
+      "bureau_7d_volume_eth": 2154.84,
+      "bureau_unique_buyers_7d": 235,
+      "missing_inputs": [],
+      "sources": [
+        "NFTPriceFloor",
+        "CoinGecko",
+        "OpenSea",
+        "alternative.me Fear & Greed"
+      ]
+    },
+    "drops": null,
+    "traits": null,
+    "bot": null
+  }
+}
