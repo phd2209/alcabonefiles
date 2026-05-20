@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-05-20T17:10:49.329Z",
+  "generated_at": "2026-05-20T17:39:00.893Z",
   "sections": {
     "briefing": {
       "tier": 1,
       "title": "MORNING BRIEFING",
       "source": "briefing",
-      "updated_at": "2026-05-20T17:10:49.328Z",
+      "updated_at": "2026-05-20T17:39:00.889Z",
       "date": "2026-05-20",
       "bureau_index": 46,
       "band": "yellow",
@@ -168,8 +168,8 @@
       "bureau_7d_volume_eth": 3144.92,
       "bureau_unique_buyers_7d": 240,
       "missing_inputs": [],
-      "chart_png_path": "/bureau/charts/chart-2026-05-20.png?v=2026-05-20",
-      "chart_svg_path": "/bureau/charts/chart-2026-05-20.svg?v=2026-05-20",
+      "chart_png_path": "/bureau-data/charts/chart-2026-05-20.png?v=2026-05-20",
+      "chart_svg_path": "/bureau-data/charts/chart-2026-05-20.svg?v=2026-05-20",
       "sources": [
         "NFTPriceFloor",
         "CoinGecko",

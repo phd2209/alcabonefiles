@@ -395,7 +395,7 @@ export default function BureauPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch('/bureau/latest.json', { cache: 'no-cache' })
+    fetch('/bureau-data/latest.json', { cache: 'no-cache' })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -411,7 +411,7 @@ export default function BureauPage() {
         <div className="manila-folder rounded-lg p-6 max-w-md text-center">
           <h1 className="font-heading text-2xl text-rust-red mb-2">EVIDENCE UNAVAILABLE</h1>
           <p className="font-typewriter text-sm text-noir-black">
-            Could not load <code>/bureau/latest.json</code> ({error}).
+            Could not load <code>/bureau-data/latest.json</code> ({error}).
           </p>
           <p className="font-typewriter text-xs text-burnt-shadow mt-3">
             Run <code>node publish-bureau.js</code> in <code>briefing/</code> to generate it.
