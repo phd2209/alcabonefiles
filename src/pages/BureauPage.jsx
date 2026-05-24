@@ -258,45 +258,136 @@ function ReportCard({ reportCard }) {
 
 // ── WANTED BOARD — tracked collections ──────────────────────────────────────
 
-function WantedBoard({ board }) {
-  if (!board || board.length === 0) return null;
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {board.map((c) => (
-        <div
-          key={c.slug}
-          className="paper-texture rounded p-4 relative evidence-shadow"
-          style={c.is_hq ? { outline: '2px solid #9B2F2F', outlineOffset: -2 } : undefined}
-        >
-          {c.is_hq && (
-            <div className="absolute -top-2 -right-2 font-heading text-[10px] text-off-white bg-rust-red px-2 py-0.5 rounded rotate-6">
-              HQ
-            </div>
-          )}
-          <div className="flex items-center gap-2 mb-2">
-            <CollectionLogo image={c.image} name={c.display} />
-            <div className="min-w-0">
-              <div className="font-heading text-xl text-noir-black tracking-wide leading-none">{c.display}</div>
-              <div className="font-typewriter text-[11px] text-burnt-shadow truncate">{c.slug}</div>
-            </div>
-          </div>
+// Sort keys the board exposes. `vol_change_pct` / `floor_change_pct` are the
+// Δ-vs-prior-brief fields from the briefing data layer (commit f63d2ae); they
+// read null on pre-f63d2ae captures, in which case the comparator sorts those
+// rows to the end and the grid degrades to its configured collection order.
+const BOARD_SORTS = [
+  { key: 'vol_change_pct', label: 'VOL Δ' },
+  { key: 'floor_change_pct', label: 'FLOOR Δ' },
+  { key: 'floor_eth', label: 'FLOOR' },
+  { key: 'unique_buyers_7d', label: 'BUYERS' },
+];
 
-          <div className="font-typewriter text-sm text-noir-black">
-            <span className="text-burnt-shadow">FLOOR</span>{' '}
-            <span className="font-bold">{c.floor_display ?? '—'} Ξ</span>
-          </div>
-          <div className="font-typewriter text-xs text-noir-black mt-1">
-            <span className="text-burnt-shadow">7d VOL</span>{' '}
-            {c.vol_7d_eth != null ? `${c.vol_7d_eth} Ξ` : '—'}
-          </div>
-          <div className="font-typewriter text-xs text-noir-black">
-            <span className="text-burnt-shadow">7d SALES</span> {c.sales_7d ?? '—'}
-            {'  ·  '}
-            <span className="text-burnt-shadow">BUYERS</span> {c.unique_buyers_7d ?? '—'}
-          </div>
-        </div>
-      ))}
-    </div>
+// Soft cell tint keyed to vol Δ — green-up / red-down, faint enough to sit under
+// the paper texture. There is no per-collection composite (the BUREAU INDEX is
+// Bureau-wide), so vol Δ is the honest per-cell colour key. null/flat → no tint.
+function deltaTint(pct) {
+  if (pct == null || isNaN(Number(pct))) return undefined;
+  const n = Number(pct);
+  if (Math.abs(n) < 0.05) return undefined;
+  return n > 0 ? 'rgba(62,110,79,0.14)' : 'rgba(155,47,47,0.12)';
+}
+
+// Descending comparator that always pushes null/NaN to the end, so a Δ sort on
+// data that predates the Δ fields falls back to a stable configured order.
+function byKeyDesc(key) {
+  return (a, b) => {
+    const av = a[key], bv = b[key];
+    const an = av == null || isNaN(Number(av));
+    const bn = bv == null || isNaN(Number(bv));
+    if (an && bn) return 0;
+    if (an) return 1;
+    if (bn) return -1;
+    return Number(bv) - Number(av);
+  };
+}
+
+function WantedBoard({ board }) {
+  const [sortKey, setSortKey] = useState('vol_change_pct');
+  if (!board || board.length === 0) return null;
+
+  // HQ is the board's subject — pinned first regardless of sort; field offices
+  // sort beneath it.
+  const hq = board.filter((c) => c.is_hq);
+  const field = [...board.filter((c) => !c.is_hq)].sort(byKeyDesc(sortKey));
+  const ordered = [...hq, ...field];
+  const hasDelta = board.some((c) => c.vol_change_pct != null || c.floor_change_pct != null);
+
+  return (
+    <>
+      <div className="mb-3 flex items-center gap-2 flex-wrap">
+        <span className="font-typewriter text-[11px] text-aged-brown uppercase tracking-wide">Sort by</span>
+        {BOARD_SORTS.map((s) => {
+          const on = s.key === sortKey;
+          return (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setSortKey(s.key)}
+              className="font-typewriter text-[11px] uppercase tracking-wide px-2 py-1 rounded border transition-colors"
+              style={{
+                color: on ? '#F4EEDB' : '#8A7A5C',
+                background: on ? '#6E5A3E' : 'transparent',
+                borderColor: '#6E5A3E',
+              }}
+            >
+              {s.label}
+            </button>
+          );
+        })}
+        <span className="font-typewriter text-[11px] text-burnt-shadow italic ml-1">
+          {hasDelta ? 'Δ vs prior brief' : 'Δ populates after the next briefing'}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {ordered.map((c) => {
+          const tint = deltaTint(c.vol_change_pct);
+          return (
+            <div
+              key={c.slug}
+              className="paper-texture rounded p-4 relative evidence-shadow"
+              style={{
+                ...(c.is_hq ? { outline: '2px solid #9B2F2F', outlineOffset: -2 } : {}),
+                ...(tint ? { background: tint } : {}),
+              }}
+            >
+              {c.is_hq && (
+                <div className="absolute -top-2 -right-2 font-heading text-[10px] text-off-white bg-rust-red px-2 py-0.5 rounded rotate-6">
+                  HQ
+                </div>
+              )}
+              <div className="flex items-center gap-2 mb-2">
+                <CollectionLogo image={c.image} name={c.display} />
+                <div className="min-w-0">
+                  <div className="font-heading text-xl text-noir-black tracking-wide leading-none">{c.display}</div>
+                  <div className="font-typewriter text-[11px] text-burnt-shadow truncate">{c.slug}</div>
+                </div>
+              </div>
+
+              <div className="font-typewriter text-sm text-noir-black flex items-baseline justify-between gap-2">
+                <span>
+                  <span className="text-burnt-shadow">FLOOR</span>{' '}
+                  <span className="font-bold">{c.floor_display ?? '—'} Ξ</span>
+                </span>
+                {c.floor_change_pct != null && (
+                  <span className="tabular-nums" style={{ color: pctColor(c.floor_change_pct) }}>
+                    {fmtPct(c.floor_change_pct)}
+                  </span>
+                )}
+              </div>
+              <div className="font-typewriter text-xs text-noir-black mt-1 flex items-baseline justify-between gap-2">
+                <span>
+                  <span className="text-burnt-shadow">7d VOL</span>{' '}
+                  {c.vol_7d_eth != null ? `${c.vol_7d_eth} Ξ` : '—'}
+                </span>
+                {c.vol_change_pct != null && (
+                  <span className="tabular-nums" style={{ color: pctColor(c.vol_change_pct) }}>
+                    {fmtPct(c.vol_change_pct)}
+                  </span>
+                )}
+              </div>
+              <div className="font-typewriter text-xs text-noir-black mt-1">
+                <span className="text-burnt-shadow">7d SALES</span> {c.sales_7d ?? '—'}
+                {'  ·  '}
+                <span className="text-burnt-shadow">BUYERS</span> {c.unique_buyers_7d ?? '—'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
