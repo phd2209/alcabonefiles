@@ -7,7 +7,7 @@ import { groupByTier, getTopCollectors, getRandomItem } from '../utils/familyUti
 import { getClassificationLevel } from '../types/classification';
 import { getAllCollectionNFTs, getOpenSeaNFTsForOwner, extractOpenSeaImage } from '../utils/openseaApi';
 
-export default function LandingPage({ onSelectCase, onSelectSuspect, cachedData }) {
+export default function LandingPage({ onSelectCase, onSelectSuspect, onOpenWarRoom, cachedData }) {
   const [loading, setLoading] = useState(!cachedData);
   const [tierData, setTierData] = useState(cachedData?.tierData || {});
   const [topSuspects, setTopSuspects] = useState(cachedData?.topSuspects || []);
@@ -290,6 +290,27 @@ export default function LandingPage({ onSelectCase, onSelectSuspect, cachedData 
                 </motion.div>
               );
             })}
+
+            {/* THE MOST WANTED LIST — the Syndicate War board (§7). Sits in the
+                same folder grid as the tiers because it is the same kind of
+                thing: a case file you open. */}
+            {onOpenWarRoom && (
+              <motion.div
+                key="warroom"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + Object.keys(tierData).length * 0.1 }}
+              >
+                <FolderCard
+                  title="Most Wanted"
+                  classification="LEVEL 5 — ACTIVE FILE"
+                  image={tierImages['Godfather'] || Object.values(tierImages)[0]}
+                  walletCount={topSuspects.length}
+                  badge="ACTIVE"
+                  onClick={onOpenWarRoom}
+                />
+              </motion.div>
+            )}
           </div>
         </motion.section>
 

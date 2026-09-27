@@ -18,6 +18,13 @@ dist-ssr
 .env.production
 .env.development
 
+# Syndicate War — PREVIEW output only.
+# fetch-syndicate.js quarantines provisional runs (season not open, modelled
+# window, every conduct term zero) into a preview/ folder. bureau-data is served
+# straight off the site, so committing these would publish scores that are not
+# canon. Real season output sits beside it and IS tracked.
+public/bureau-data/syndicate/*/preview/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
