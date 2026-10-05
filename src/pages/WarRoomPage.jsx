@@ -647,6 +647,12 @@ export default function WarRoomPage({ onBack, onSelectSuspect }) {
 
   useEffect(() => { setLimit(10); setFocusAddr(null); }, [q, list]);
 
+  // A wallet with 5+ men opens its family chart in a new tab, so the list stays put.
+  const openFile = (addr) => {
+    if ((roster.find((w) => w.address === addr)?.outfit ?? 0) >= 5) window.open(`/most-wanted/${addr}`, '_blank');
+    else onSelectSuspect(addr);
+  };
+
   /**
    * Search down to a single wallet and the board stops being a top-N list and
    * becomes YOUR neighbourhood: three above, you, three below. A rank is only
@@ -834,7 +840,7 @@ export default function WarRoomPage({ onBack, onSelectSuspect }) {
               <div key={w.address} style={{ display: 'contents' }}>
                 <SubjectRow
                   w={w}
-                  onSelect={onSelectSuspect}
+                  onSelect={openFile}
                   onInfo={() => setSheetOpen(true)}
                   focus={w.address === neighbourhood.you.address}
                   urgency={w.address === neighbourhood.you.address ? (
@@ -850,7 +856,7 @@ export default function WarRoomPage({ onBack, onSelectSuspect }) {
           ) : (
             matches.slice(0, limit).map((w) => (
               <SubjectRow key={w.address} w={w} onInfo={() => setSheetOpen(true)}
-                          onSelect={q.trim() && list === 'wanted' ? setFocusAddr : onSelectSuspect} />
+                          onSelect={q.trim() && list === 'wanted' ? setFocusAddr : openFile} />
             ))
           )}
           {!matches.length && (

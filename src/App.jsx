@@ -3,10 +3,13 @@ import LandingPage from './pages/LandingPage';
 import CaseFilePage from './pages/CaseFilePage';
 import SuspectDetailPage from './pages/SuspectDetailPage';
 import WarRoomPage from './pages/WarRoomPage';
+import FamilyChartPage from './pages/FamilyChartPage';
 
 // The one linkable address: the Bureau's weekly Most Wanted List. vercel.json
 // already sends every path to index.html, so the path only picks the first view.
 const MOST_WANTED_PATH = '/most-wanted';
+// Each wallet's family chart, opened from a Most Wanted row in its own tab.
+const CHART_WALLET = window.location.pathname.match(/^\/most-wanted\/(0x[0-9a-fA-F]{40})\/?$/)?.[1];
 const setPath = (path) => {
   if (window.location.pathname !== path) window.history.pushState(null, '', path);
 };
@@ -74,6 +77,8 @@ function App() {
     setSelectedCase(null);
     setSelectedSuspect(null);
   };
+
+  if (CHART_WALLET) return <FamilyChartPage wallet={CHART_WALLET} />;
 
   return (
     <div className="min-h-screen">
