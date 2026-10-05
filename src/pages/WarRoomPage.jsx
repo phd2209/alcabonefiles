@@ -570,7 +570,7 @@ function Card({ kicker, title, children }) {
   );
 }
 
-export default function WarRoomPage({ onBack, onSelectSuspect }) {
+export default function WarRoomPage({ onBack }) {
   const [week, setWeek] = useState(null);
   const [roster, setRoster] = useState(null);
   const [state, setState] = useState('loading'); // loading | ready | closed | error
@@ -647,11 +647,8 @@ export default function WarRoomPage({ onBack, onSelectSuspect }) {
 
   useEffect(() => { setLimit(10); setFocusAddr(null); }, [q, list]);
 
-  // A wallet with 5+ men opens its family chart in a new tab, so the list stays put.
-  const openFile = (addr) => {
-    if ((roster.find((w) => w.address === addr)?.outfit ?? 0) >= 5) window.open(`/most-wanted/${addr}`, '_blank');
-    else onSelectSuspect(addr);
-  };
+  // A wallet opens its own page in a new tab, so the list stays put.
+  const openFile = (addr) => window.open(`/most-wanted/${addr}`, '_blank');
 
   /**
    * Search down to a single wallet and the board stops being a top-N list and

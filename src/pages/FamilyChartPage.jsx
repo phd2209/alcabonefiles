@@ -183,6 +183,37 @@ function Sheet({ wallet, rank, men, data, sheetRef, height, onFit }) {
   );
 }
 
+// Under 5 men there is no chart: the wallet is told what it takes to get one (Toni, 5 Oct).
+const WORDS = ['no', 'one', 'two', 'three', 'four'];
+function NoFile({ addr, held, date }) {
+  const don = generateMobsterName(addr);
+  const need = 5 - held;
+  return (
+    <div style={{ maxWidth: 620, margin: '8vh auto 0', background: '#efe8d6', color: '#23211e',
+                  padding: '34px 30px', transform: 'rotate(-0.6deg)', boxShadow: '0 10px 30px rgba(0,0,0,.5)',
+                  fontFamily: "'Special Elite', monospace", textAlign: 'center', lineHeight: 1.6 }}>
+      <div style={{ fontSize: 13, letterSpacing: 3, color: '#6b6250' }}>
+        THE BUREAU · {addr.slice(0, 6)}…{addr.slice(-4)}
+      </div>
+      <h1 style={{ fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: 'clamp(30px, 7vw, 46px)',
+                   letterSpacing: 2, lineHeight: 1.1, margin: '14px 0 18px' }}>
+        NO FILE ON {`${don.firstName} ${don.lastName}`.toUpperCase()}. YET.
+      </h1>
+      <p style={{ fontSize: 17, margin: '0 0 8px' }}>
+        {held ? `${held} Al Cabone${held > 1 ? 's' : ''} on the books (${date}).` : `No Al Cabones on the books (${date}).`}
+      </p>
+      <p style={{ fontSize: 17, margin: '0 0 24px' }}>
+        The Bureau opens a family chart at 5. {need === 5 ? 'Five men' : `${WORDS[need][0].toUpperCase()}${WORDS[need].slice(1)} more`} and
+        this family goes up on the wall.
+      </p>
+      <a href="https://opensea.io/collection/thealcabones" target="_blank" rel="noreferrer" style={{
+        display: 'inline-block', border: '3px solid #b3261e', color: '#b3261e', padding: '8px 18px',
+        fontFamily: 'Oswald, sans-serif', fontWeight: 700, fontSize: 20, letterSpacing: 3, textDecoration: 'none',
+      }}>RECRUIT ON OPENSEA</a>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------- the page
 
 export default function FamilyChartPage({ wallet }) {
@@ -248,12 +279,7 @@ export default function FamilyChartPage({ wallet }) {
       </div>
       {error && <p style={{ textAlign: 'center', fontFamily: 'monospace' }}>{error}</p>}
       {!data && !error && <p style={{ textAlign: 'center', fontFamily: 'monospace' }}>Pulling the file…</p>}
-      {data && !entry && (
-        <p style={{ textAlign: 'center', fontFamily: 'monospace', lineHeight: 1.6 }}>
-          No family chart for {addr.slice(0, 6)}…{addr.slice(-4)} in the {data.date} edition.<br />
-          Charts start at 5 men.
-        </p>
-      )}
+      {data && !entry && <NoFile addr={addr} held={data.small?.[addr] ?? 0} date={data.date} />}
       {entry && (
         <div style={{ width: W * scale, height: height * scale, margin: '0 auto', overflow: 'hidden' }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W }}>
