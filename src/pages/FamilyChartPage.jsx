@@ -1,6 +1,7 @@
-import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { toPng } from 'html-to-image';
 import { generateMobsterName } from '../utils/nameGenerator';
+import WantedPoster from '../components/wanted-poster/WantedPoster';
 
 /**
  * FamilyChartPage — one wallet's Al Cabones as the Bureau's family chart, after the 1963
@@ -9,7 +10,7 @@ import { generateMobsterName } from '../utils/nameGenerator';
  * Port of burn-the-ships/org-chart.js (the evidence-board look, Toni, 3 Oct). The men —
  * names, codes, notes, rarity — come precomputed from syndicate-war/publish-charts.js in
  * /bureau-data/most-wanted/<date>-charts.json; this page only lays them out and renders
- * the 2000px-wide sheet to a PNG.
+ * the 2000px-wide sheet to a PNG. Clicking a man opens his Wanted Poster.
  */
 
 const WEEKLY_DIR = '/bureau-data/most-wanted';
@@ -62,14 +63,32 @@ function tree(men) {
   return { boss, consigliere, groups: [{ ub, regimes: regimesOf(rest) }], buttons: [] };
 }
 
+// Each man's position on the chart, for his poster.
+function rolesOf(men) {
+  const T = tree(men), roles = new Map();
+  roles.set(T.boss.id, { title: 'BOSS' });
+  roles.set(T.consigliere.id, { title: 'CONSIGLIERE' });
+  for (const g of T.groups) {
+    roles.set(g.ub.id, { title: 'UNDERBOSS', where: g.district });
+    for (const r of g.regimes) {
+      const where = `${r.capo.name[0]} ${r.capo.name[1]} REGIME`.toUpperCase();
+      roles.set(r.capo.id, { title: 'CAPOREGIME', where });
+      for (const s of r.soldiers) roles.set(s.id, { title: 'SOLDIER', where });
+    }
+  }
+  for (const b of T.buttons) roles.set(b.id, { title: 'SOLDIER' });
+  return roles;
+}
+
 // ---------------------------------------------------------------- the sheet
 
 // A polaroid: the man in colour, his name on the margin, the Bureau's typed line under it.
-function Polaroid({ m, size, name, role, district, supply, img }) {
+function Polaroid({ m, size, name, role, district, supply, img, open }) {
   const [first, last, nick] = name ? [name.firstName, name.lastName, name.nickname] : m.name;
   const tilt = (((Number(m.id) * 37) % 9) - 4) * 0.45;
   return (
-    <div className={`p ${size}`} style={{ '--fc': FAMILY_COLOR[m.family] || '#555', '--tilt': `${tilt}deg` }}>
+    <div className={`p ${size}`} onClick={() => open(m)}
+         style={{ '--fc': FAMILY_COLOR[m.family] || '#555', '--tilt': `${tilt}deg` }}>
       {role && <div className="rl">{role}</div>}
       {district && <div className="ds">{district}</div>}
       <div className="fr">
@@ -86,7 +105,7 @@ function Polaroid({ m, size, name, role, district, supply, img }) {
   );
 }
 
-function Sheet({ wallet, rank, men, data, sheetRef, height, onFit }) {
+function Sheet({ wallet, rank, men, data, sheetRef, height, onFit, open }) {
   const treeRef = useRef(null);
   const don = generateMobsterName(wallet);
   const T = tree(men);
@@ -99,7 +118,7 @@ function Sheet({ wallet, rank, men, data, sheetRef, height, onFit }) {
   const shown = SHOWN(men.length);
   const one = T.groups.length === 1;
   const img = (m) => (m.img.startsWith('http') ? m.img : data.imgPrefix + m.img);
-  const base = { supply: data.supply, img };
+  const base = { supply: data.supply, img, open };
 
   // Fit the tree between the header and the footer; a short tree crops the sheet (never below 4:3).
   useLayoutEffect(() => {
@@ -126,7 +145,7 @@ function Sheet({ wallet, rank, men, data, sheetRef, height, onFit }) {
         <div className="more">
           <div className="ml">+ {r.soldiers.length - shown} MORE BUTTONS</div>
           <div className="th">{r.soldiers.slice(shown).map((m) => (
-            <img key={m.id} src={img(m)} crossOrigin="anonymous" alt=""
+            <img key={m.id} src={img(m)} crossOrigin="anonymous" alt="" onClick={() => open(m)}
                  style={{ '--fc': FAMILY_COLOR[m.family] || '#555' }} />))}</div>
         </div>
       )}
@@ -223,6 +242,7 @@ export default function FamilyChartPage({ wallet }) {
   const [height, setHeight] = useState(2000);
   const [scale, setScale] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [poster, setPoster] = useState(null);
   const sheetRef = useRef(null);
 
   useEffect(() => {
@@ -251,6 +271,8 @@ export default function FamilyChartPage({ wallet }) {
 
   const entry = data?.wallets[addr];
   const don = generateMobsterName(addr);
+  const roles = useMemo(() => entry && rolesOf(entry.men), [entry]);
+  const closePoster = useCallback(() => setPoster(null), []);
   useEffect(() => { document.title = `The ${don.firstName} ${don.lastName} Family · alcabonefiles`; },
     [don.firstName, don.lastName]);
 
@@ -274,6 +296,8 @@ export default function FamilyChartPage({ wallet }) {
       <div style={{ maxWidth: W, margin: '0 auto 16px', display: 'flex', gap: 12, flexWrap: 'wrap',
                     justifyContent: 'space-between', alignItems: 'center' }}>
         <a href="/most-wanted" style={btn}>← THE MOST WANTED LIST</a>
+        {entry && <span style={{ fontFamily: "'Special Elite', monospace", fontSize: 14, letterSpacing: 2, color: '#b9ad92' }}>
+          CLICK A MAN FOR HIS WANTED POSTER</span>}
         {entry && <button type="button" onClick={download} disabled={busy} style={btn}>
           {busy ? 'DEVELOPING…' : 'DOWNLOAD PNG'}</button>}
       </div>
@@ -284,9 +308,17 @@ export default function FamilyChartPage({ wallet }) {
         <div style={{ width: W * scale, height: height * scale, margin: '0 auto', overflow: 'hidden' }}>
           <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: W }}>
             <Sheet wallet={addr} rank={entry.rank} men={entry.men} data={data}
-                   sheetRef={sheetRef} height={height} onFit={setHeight} />
+                   sheetRef={sheetRef} height={height} onFit={setHeight} open={setPoster} />
           </div>
         </div>
+      )}
+      {poster && (
+        <WantedPoster m={poster} role={roles.get(poster.id)} onClose={closePoster}
+          name={roles.get(poster.id).title === 'BOSS' ? [don.firstName, don.lastName, don.nickname] : poster.name}
+          color={FAMILY_COLOR[poster.family] || '#555'}
+          img={poster.img.startsWith('http') ? poster.img : data.imgPrefix + poster.img}
+          supply={data.supply} codes={data.codes} family={`${don.firstName} ${don.lastName}`}
+          rank={entry.rank} wallet={addr} date={data.date} />
       )}
     </div>
   );
@@ -309,7 +341,7 @@ width:2000px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'
 .oc .st .b{display:inline-block;border:6px solid #b3261e;color:#b3261e;font-family:Oswald;font-weight:700;font-size:52px;letter-spacing:5px;padding:4px 20px;transform:rotate(-6deg);opacity:.9;line-height:1.1}
 .oc .st .s{margin-top:20px;font-family:'Special Elite';font-size:21px;letter-spacing:2px;line-height:1.6;color:var(--sub)}
 .oc #tree{position:absolute;top:270px;left:50%;width:max-content;transform-origin:top center;display:flex;flex-direction:column;align-items:center}
-.oc .p{display:flex;flex-direction:column;align-items:center;text-align:center}
+.oc .p{display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer}
 .oc .fr{position:relative;background:var(--card);padding:9px 9px 0;box-shadow:0 8px 18px rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.2);transform:rotate(var(--tilt));border-bottom:7px solid var(--fc)}
 .oc .fr img{display:block;object-fit:cover;background:#999;max-width:none}
 .oc .cap{color:#1d1c1a;padding:6px 4px 8px;line-height:1.05}
@@ -348,6 +380,6 @@ width:2000px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'
 .oc .more{margin-top:16px;text-align:center}
 .oc .ml{font-family:'Special Elite';font-size:14px;letter-spacing:2px;margin-bottom:8px;color:var(--sub)}
 .oc .th{display:grid;grid-template-columns:repeat(7,30px);gap:4px;justify-content:center}
-.oc .th img{width:30px;height:35px;object-fit:cover;border-bottom:3px solid var(--fc);background:#999;max-width:none}
+.oc .th img{cursor:pointer;width:30px;height:35px;object-fit:cover;border-bottom:3px solid var(--fc);background:#999;max-width:none}
 .oc .fo{position:absolute;bottom:34px;left:70px;right:70px;display:flex;justify-content:space-between;font-family:'Special Elite';font-size:19px;letter-spacing:1px;color:var(--sub);z-index:3}
 `;
