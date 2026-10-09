@@ -14,7 +14,7 @@ import WantedPoster from '../components/wanted-poster/WantedPoster';
  */
 
 const WEEKLY_DIR = '/bureau-data/most-wanted';
-const FONTS = 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Condensed:ital,wght@0,400;0,700;1,700&family=Special+Elite&family=Caveat:wght@600;700&display=swap';
+const FONTS = 'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Old+Standard+TT:wght@400;700&family=Oswald:wght@500;700&family=Roboto+Condensed:ital,wght@0,400;0,700;1,700&family=Special+Elite&family=Caveat:wght@600;700&display=swap';
 
 const FAMILY_COLOR = {
   Rambones: '#c2452d', Napolebones: '#e0821f', Corlebones: '#2f6f73', Gambones: '#6a46a8',
@@ -315,10 +315,10 @@ export default function FamilyChartPage({ wallet }) {
       {poster && (
         <WantedPoster m={poster} role={roles.get(poster.id)} onClose={closePoster}
           name={roles.get(poster.id).title === 'BOSS' ? [don.firstName, don.lastName, don.nickname] : poster.name}
-          color={FAMILY_COLOR[poster.family] || '#555'}
           img={poster.img.startsWith('http') ? poster.img : data.imgPrefix + poster.img}
           supply={data.supply} codes={data.codes} family={`${don.firstName} ${don.lastName}`}
-          rank={entry.rank} wallet={addr} date={data.date} />
+          rank={entry.rank} men={entry.men.length} families={new Set(entry.men.map((m) => m.family)).size}
+          date={data.date} />
       )}
     </div>
   );
