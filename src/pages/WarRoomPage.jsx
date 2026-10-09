@@ -332,6 +332,48 @@ function Comparison({ you, rival }) {
   );
 }
 
+/**
+ * The top ten as a wall of mugshots, after the FBI's Ten Most Wanted page (Toni, 9 Oct):
+ * the first thing on the page is Al Cabones, not text.
+ */
+function TopTen({ rows, onSelect }) {
+  const narrow = useNarrow();
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: narrow ? '10px 6px' : '14px 12px',
+                  marginTop: 14 }}>
+      {rows.map((w) => {
+        const n = generateMobsterName(w.address);
+        return (
+          <button key={w.address} type="button" onClick={() => onSelect(w.address)} title={n?.fullName}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: C.paper,
+                     textAlign: 'center', minWidth: 0 }}>
+            <div style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', background: '#2B2320',
+                          border: `2px solid ${w.rank <= 3 ? '#D6A63F' : 'rgba(201,174,132,0.45)'}` }}>
+              {w.mug?.image && <img src={w.mug.image} alt={`Cabone #${w.mug.tokenId}`} style={{
+                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                filter: 'sepia(.25) contrast(1.05)' }} />}
+              <span style={{ position: 'absolute', top: 0, left: 0, background: C.rust, color: C.paper,
+                             fontFamily: FONT.mono, fontWeight: 700, fontSize: narrow ? 9 : 11,
+                             letterSpacing: '1px', padding: narrow ? '1px 4px' : '2px 6px' }}>No. {w.rank}</span>
+            </div>
+            <div style={{ fontFamily: FONT.display, fontWeight: 700, textTransform: 'uppercase',
+                          fontSize: narrow ? 10 : 13.5, lineHeight: 1.1, marginTop: 5, overflow: 'hidden',
+                          textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {n?.firstName} {n?.lastName}
+            </div>
+            {!narrow && (
+              <div style={{ fontFamily: FONT.serif, fontStyle: 'italic', fontSize: 12.5, color: C.manila,
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                &ldquo;{n?.nickname}&rdquo;
+              </div>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function SubjectRow({ w, onSelect, focus, urgency, onInfo }) {
   const [hover, setHover] = useState(false);
   const narrow = useNarrow();
@@ -738,52 +780,47 @@ export default function WarRoomPage({ onBack }) {
           marginTop: 22, position: 'relative', overflow: 'hidden', color: C.paper,
           background: 'radial-gradient(120% 130% at 12% -20%,#2B2320 0%,#141110 55%,#0B0908 100%)',
           border: `3px solid ${C.ink}`, boxShadow: '10px 10px 0 rgba(20,17,16,0.22)',
-          padding: '38px 30px 30px',
+          padding: '20px 26px 18px',
         }}
       >
         <span style={{ fontFamily: FONT.mono, fontSize: 10.5, letterSpacing: '4px',
                        textTransform: 'uppercase', color: C.manila, display: 'block',
-                       marginBottom: 16 }}>
+                       marginBottom: 8 }}>
           {weekly
             ? <>NFT Bureau of Investigation · Weekly Ranking · Week of {weekOf}</>
             : <>NFT Bureau of Investigation · Active File · Season {week.season} · Week {week.week}</>}
         </span>
         <h1 style={{ fontFamily: FONT.display, textTransform: 'uppercase', fontWeight: 700,
-                     fontSize: 'clamp(46px,11.5vw,124px)', lineHeight: 0.82, letterSpacing: '-1px',
-                     margin: '0 0 14px', color: C.paper }}>
-          The Most<span style={{ color: '#CE5D50', display: 'block' }}>Wanted</span>List
+                     fontSize: 'clamp(36px,7vw,72px)', lineHeight: 0.9, letterSpacing: '-1px',
+                     margin: '0 0 8px', color: C.paper }}>
+          The Most <span style={{ color: '#CE5D50' }}>Wanted</span> List
         </h1>
         <p style={{ fontFamily: FONT.mono, fontSize: 12.5, color: C.manila, letterSpacing: '0.7px',
-                    maxWidth: '54ch', lineHeight: 1.7, margin: 0 }}>
-          Every wallet holding an Al Cabone is ranked. Not by how many you own — by how many, how
-          rare, how long, and what you did this week. Look yourself up and check the numbers.
+                    maxWidth: '64ch', lineHeight: 1.5, margin: 0 }}>
+          Every holder ranked: how many, how rare, how long, and what you did this week.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(112px,1fr))',
-                      gap: 20, marginTop: 26, paddingTop: 20,
-                      borderTop: '1px solid rgba(201,174,132,0.3)' }}>
+        <TopTen rows={roster.slice(0, 10)} onSelect={openFile} />
+        <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid rgba(201,174,132,0.3)',
+                      fontFamily: FONT.mono, fontSize: 10.5, letterSpacing: '1.2px', textTransform: 'uppercase',
+                      color: '#A98F63', lineHeight: 1.7 }}>
           {[
-            [nf(roster.length), 'Suspects ranked', false],
-            [nf(week.integrity.tokensSeen), 'Cabones at large', false],
-            [nf(week.notoriety.distinctScores), 'Distinct scores', true],
-            [nf(market.forHire.tokens), 'For hire', false],
-            [Number(market.warChest.totalFundedEth).toFixed(3), 'War chest, Ξ', true],
-          ].map(([v, k, acc]) => (
-            <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <b style={{ fontFamily: FONT.num, fontWeight: 700, fontSize: 30, lineHeight: 1,
-                          color: acc ? '#D6A63F' : C.paper, fontVariantNumeric: 'tabular-nums',
-                          letterSpacing: '-0.8px' }}>{v}</b>
-              <span style={{ fontFamily: FONT.mono, fontSize: 9.5, letterSpacing: '1.4px',
-                             textTransform: 'uppercase', color: '#A98F63' }}>{k}</span>
-            </div>
+            [nf(roster.length), 'suspects ranked'],
+            [nf(week.integrity.tokensSeen), 'Cabones at large'],
+            [nf(week.notoriety.distinctScores), 'distinct scores'],
+            [nf(market.forHire.tokens), 'for hire'],
+            [`${Number(market.warChest.totalFundedEth).toFixed(3)} Ξ`, 'war chest'],
+          ].map(([v, k], i) => (
+            <span key={k} style={{ whiteSpace: 'nowrap' }}>{i > 0 && ' · '}
+              <b style={{ color: C.paper, fontFamily: FONT.num }}>{v}</b> {k}</span>
           ))}
         </div>
       </MotionDiv>
 
-      <Card kicker="The Board" title="Look yourself up.">
+      {/* After the first Public Enemies list, Chicago Crime Commission, April 1930 (Toni, 9 Oct). */}
+      <Card kicker="The Board · After Chicago's first list, April 1930. Al Capone was No. 1."
+            title="Public Enemies. Look yourself up.">
         <p style={{ margin: 0, maxWidth: '64ch', fontSize: 15.5 }}>
-          All {nf(roster.length)} holders are ranked, not just the big ones. Paste any wallet
-          address — or part of one — to pull its file. Every term that counts toward the score is
-          on the row.{' '}
+          All {nf(roster.length)} holders are ranked. Search any wallet below.{' '}
           <button type="button" onClick={() => setSheetOpen(true)} style={{
             background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: C.rust,
             font: 'inherit', textDecoration: 'underline',
@@ -800,7 +837,7 @@ export default function WarRoomPage({ onBack }) {
         </div>
         <p style={{ margin: 0, fontSize: 15, color: C.sub }}>{LISTS[list].blurb}</p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center',
-                      border: `2px solid ${C.folder}`, padding: '14px 16px', background: C.well }}>
+                      border: `2px solid ${C.folder}`, padding: '10px 14px', background: C.well }}>
           <label htmlFor="warroom-q" style={{ fontFamily: FONT.mono, fontSize: 10,
                  letterSpacing: '1.6px', textTransform: 'uppercase', color: C.sub }}>
             Find a wallet
