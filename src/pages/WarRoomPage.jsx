@@ -139,39 +139,50 @@ function useNarrow() {
   return narrow;
 }
 
-function Mugshot({ mug, podium, size = 84 }) {
+/**
+ * The row's one bold thing: the man's best piece as a booking photo, with the
+ * placard a 1930s booking photo held under the face. The placard carries the
+ * list position, so the row needs no separate rank column.
+ */
+function Mugshot({ mug, podium, size, no, span }) {
   const [failed, setFailed] = useState(false);
-  const box = {
-    gridRow: '1 / 3', width: size, height: size, position: 'relative', overflow: 'hidden',
-    border: `2px solid ${podium ? C.gold : C.folder}`, background: C.well, flex: 'none',
-  };
-  if (!mug || !mug.image || failed) {
-    return (
-      <div style={box}>
-        <span style={{
-          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', textAlign: 'center', fontFamily: FONT.mono,
-          fontSize: 8.5, letterSpacing: '0.6px', color: C.sub, lineHeight: 1.3,
-          padding: 5, textTransform: 'uppercase',
-        }}>No photograph<br />on file</span>
-      </div>
-    );
-  }
+  const frame = podium ? C.gold : C.ink;
   return (
-    <div style={box}>
-      <img
-        src={mug.image}
-        alt={`Cabone #${mug.tokenId}`}
-        loading="lazy"
-        onError={() => setFailed(true)}
-        style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover',
-                 filter: 'grayscale(0.35) contrast(1.06)' }}
-      />
-      <span style={{
-        position: 'absolute', left: 0, right: 0, bottom: 0, background: 'rgba(20,17,16,0.72)',
-        color: C.paper, fontFamily: FONT.mono, fontSize: 8, letterSpacing: '0.5px',
-        textAlign: 'center', padding: '1px 0',
-      }}>#{mug.tokenId}</span>
+    <div style={{ gridRow: span, alignSelf: 'start', width: size, flex: 'none',
+                  border: `2px solid ${frame}`, background: C.ink,
+                  boxShadow: '3px 3px 0 rgba(20,17,16,0.22)' }}>
+      <div style={{ width: '100%', aspectRatio: '1', position: 'relative', overflow: 'hidden',
+                    background: C.well }}>
+        {mug?.image && !failed ? (
+          <img
+            src={mug.image}
+            alt={`Cabone #${mug.tokenId}`}
+            loading="lazy"
+            onError={() => setFailed(true)}
+            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover',
+                     filter: 'grayscale(0.35) contrast(1.06)' }}
+          />
+        ) : (
+          <span style={{
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', textAlign: 'center', fontFamily: FONT.mono,
+            fontSize: 9, color: C.sub, lineHeight: 1.3, padding: 6,
+          }}>No photograph on file</span>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                    gap: 6, padding: size > 100 ? '5px 9px 6px' : '3px 6px 4px',
+                    background: podium ? C.gold : C.ink, color: C.paper }}>
+        <span style={{ fontFamily: FONT.display, fontWeight: 700, fontSize: size > 100 ? 26 : 18,
+                       lineHeight: 1, letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums' }}>
+          No.&thinsp;{nf(no)}
+        </span>
+        {mug?.tokenId && (
+          <span style={{ fontFamily: FONT.mono, fontSize: size > 100 ? 11 : 9, opacity: 0.85 }}>
+            {mug.tokenId}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -188,39 +199,53 @@ function Pill({ tone, children }) {
 }
 
 /**
- * The nine terms on a fixed 5-column grid, so they land 5 on the first line and
- * 4 on the second every time — a wrapping flex row reflowed differently per
- * wallet and made the block impossible to scan down a column.
+ * The terms as one typed line of the file: "107 men  0.707 vault  1,866 days held".
+ * Only terms that score are written down (a zero term adds nothing to the total);
+ * each keeps its contribution beside it, so the row still adds up to the score.
+ * A week with no moves says so in words instead of a row of dashes.
  */
+const TYPED = {
+  theOutfit: (w) => [nf(w.outfit), w.outfit === 1 ? 'man' : 'men'],
+  theVault: (w) => [Number(w.vault).toFixed(3), 'vault'],
+  timeServed: (w) => [nf(w.servedDays), 'days held'],
+  forHire: (w) => [nf(w.forHire), 'for hire'],
+  theWarChest: (w) => [`${Number(w.warChestEth).toFixed(4)} Ξ`, 'war chest'],
+  musclingIn: (w) => (w.musclingIn > 0 ? [`+${w.musclingIn}`, 'bought this week'] : [String(-w.musclingIn), 'sold this week']),
+  walkedOrFolded: (w) => (w.foldNet > 0 ? [`+${w.foldNet}`, 'listings pulled'] : [String(-w.foldNet), 'new listings']),
+  newBlood: (w) => [nf(w.newBlood), 'sold to new blood'],
+  breakingRanks: (w) => [nf(w.breakingRanks), 'sold below floor'],
+};
+const WEEKLY_TERMS = ['musclingIn', 'walkedOrFolded', 'newBlood', 'breakingRanks'];
+
 function TermStrip({ w, narrow }) {
+  const scored = TERMS.filter((t) => (w.contributions?.[t.key] ?? 0) !== 0);
+  const quiet = !WEEKLY_TERMS.some((k) => (w.contributions?.[k] ?? 0) !== 0);
   return (
     <div style={{
-      gridColumn: narrow ? '1 / -1' : '3 / 5', marginTop: 11,
-      display: 'grid', gridTemplateColumns: `repeat(${narrow ? 3 : 5}, minmax(0, 1fr))`, gap: '9px 14px',
+      gridColumn: narrow ? '1 / -1' : 2, marginTop: 12,
+      display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '4px 22px',
     }}>
-      {TERMS.map((t) => {
-        const c = w.contributions?.[t.key] ?? 0;
-        const zero = c === 0;
+      {scored.map((t) => {
+        const c = w.contributions[t.key];
         const neg = c < 0;
         const tone = t.gold ? C.gold : neg ? C.rust : C.ink;
+        const [value, word] = TYPED[t.key](w);
         return (
-          <div key={t.key} style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <span style={{ fontFamily: FONT.mono, fontSize: 9, letterSpacing: '1.2px',
-                           textTransform: 'uppercase', color: t.gold ? C.gold : C.sub,
-                           opacity: zero ? 0.6 : t.gold ? 0.9 : 1, whiteSpace: 'nowrap',
-                           overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.k}</span>
-            <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontFamily: FONT.num, fontWeight: zero ? 400 : 700,
-                             fontSize: zero ? 14 : 19, lineHeight: 1.05, letterSpacing: '-0.4px',
-                             fontVariantNumeric: 'tabular-nums',
-                             color: zero ? C.sub : tone, opacity: zero ? 0.5 : 1 }}>{t.raw(w)}</span>
-              <span style={{ fontFamily: FONT.mono, fontSize: 10, fontVariantNumeric: 'tabular-nums',
-                             color: neg ? C.rust : t.gold ? C.gold : C.oxide,
-                             opacity: zero ? 0.4 : 1 }}>{zero ? '' : sign(c)}</span>
-            </span>
-          </div>
+          <span key={t.key} style={{ whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: FONT.num, fontWeight: 700, fontSize: 19, letterSpacing: '-0.4px',
+                           fontVariantNumeric: 'tabular-nums', color: tone }}>{value}</span>
+            <span style={{ fontFamily: FONT.serif, fontSize: 15, color: neg ? C.rust : C.sub,
+                           marginLeft: 5 }}>{word}</span>
+            <span style={{ fontFamily: FONT.mono, fontSize: 10, fontVariantNumeric: 'tabular-nums',
+                           color: neg ? C.rust : t.gold ? C.gold : C.oxide, marginLeft: 5 }}>{sign(c)}</span>
+          </span>
         );
       })}
+      {quiet && (
+        <span style={{ fontFamily: FONT.serif, fontStyle: 'italic', fontSize: 15, color: C.sub }}>
+          Quiet week.
+        </span>
+      )}
     </div>
   );
 }
@@ -236,7 +261,7 @@ function UrgencyBar({ you, rival, chaser }) {
   const mv = you.nextMove;
   return (
     <div style={{
-      gridColumn: '1 / 5', marginTop: 13, background: C.rust, color: C.paper,
+      gridColumn: '1 / -1', marginTop: 13, background: C.rust, color: C.paper,
       border: `2px solid ${C.ink}`, padding: '12px 16px 13px',
       boxShadow: '4px 4px 0 rgba(20,17,16,0.28)',
     }}>
@@ -274,7 +299,7 @@ function Comparison({ you, rival }) {
   const td = { ...th, fontFamily: FONT.num, fontWeight: 700, fontSize: 13, letterSpacing: '-0.2px',
                textTransform: 'none', color: C.ink, fontVariantNumeric: 'tabular-nums' };
   return (
-    <div style={{ gridColumn: '1 / 5', marginTop: 12, border: `1px solid ${C.folder}`,
+    <div style={{ gridColumn: '1 / -1', marginTop: 12, border: `1px solid ${C.folder}`,
                   background: C.well, padding: '12px 14px 14px' }}>
       <div style={{ fontFamily: FONT.mono, fontSize: 10.5, letterSpacing: '1.4px',
                     textTransform: 'uppercase', color: C.rust, marginBottom: 9 }}>
@@ -384,9 +409,9 @@ function SubjectRow({ w, onSelect, focus, urgency, onInfo }) {
       onMouseLeave={() => setHover(false)}
       onClick={() => onSelect && onSelect(w.address)}
       style={{
-        display: 'grid', gridTemplateColumns: narrow ? '56px 44px 1fr' : '84px 64px 1fr auto',
-        gap: narrow ? '0 10px' : '0 18px',
-        alignItems: 'center', padding: focus ? '16px 14px' : '13px 4px',
+        display: 'grid', gridTemplateColumns: narrow ? '96px 1fr' : '150px 1fr auto',
+        gap: narrow ? '0 12px' : '0 22px',
+        alignItems: 'start', padding: focus ? '18px 14px' : '16px 4px',
         borderBottom: `1px solid ${C.rule}`,
         borderLeft: focus ? `5px solid ${C.rust}` : '5px solid transparent',
         background: focus ? 'rgba(150,39,31,0.07)' : hover ? C.well : 'transparent',
@@ -400,10 +425,8 @@ function SubjectRow({ w, onSelect, focus, urgency, onInfo }) {
           padding: '1px 7px', textTransform: 'uppercase',
         }}>Your file</span>
       )}
-      <Mugshot mug={w.mug} podium={podium} size={narrow ? 56 : 84} />
-      <div style={{ gridRow: '1 / 3', fontFamily: FONT.display, fontSize: narrow ? 36 : 54, lineHeight: 0.82,
-                    color: podium ? C.gold : C.rust, fontVariantNumeric: 'tabular-nums',
-                    textAlign: 'right', letterSpacing: '-1.5px' }}>{w.listPos ?? w.rank}</div>
+      <Mugshot mug={w.mug} podium={podium} size={narrow ? 96 : 150} no={w.listPos ?? w.rank}
+               span={narrow ? 'span 2' : 'span 3'} />
       <div style={{ minWidth: 0 }}>
         {/* The crew name: deterministic per wallet, the same one the rest of the site uses. */}
         <div style={{ fontFamily: FONT.display, textTransform: 'uppercase', fontWeight: 700,
@@ -434,7 +457,7 @@ function SubjectRow({ w, onSelect, focus, urgency, onInfo }) {
           </div>
         )}
       </div>
-      <div style={{ ...(narrow && { gridColumn: 3, gridRow: 2, textAlign: 'left', marginTop: 4 }),
+      <div style={{ ...(narrow && { gridColumn: 2, gridRow: 2, textAlign: 'left', marginTop: 4 }),
                     ...(!narrow && { textAlign: 'right' }),
                     fontFamily: FONT.num, fontWeight: 700, fontSize: narrow ? 24 : 34,
                     lineHeight: 1, color: C.ink, fontVariantNumeric: 'tabular-nums',
@@ -456,15 +479,14 @@ function SubjectRow({ w, onSelect, focus, urgency, onInfo }) {
         </span>
       </div>
       <TermStrip w={w} narrow={narrow} />
-      {/* Focused rows get the loud bar instead; everyone else keeps the quiet hint. */}
+      {/* Focused rows get the loud bar instead. Everyone else gets the chase as the
+          row's second-loudest line: it is the reason to buy. */}
       {w.nextMove && !focus && (
-        <div style={{ gridColumn: narrow ? '1 / -1' : '3 / 5', fontFamily: FONT.mono, fontSize: 11.5,
-                      color: C.sub, marginTop: 8 }}>
-          ▸ <span style={{ color: C.rust }}>{w.nextMove.label}</span>
-          {' and you pass #'}{w.nextMove.passes}{' · '}
-          {w.nextMove.costEth
-            ? `${Number(w.nextMove.costEth).toFixed(4)} Ξ`
-            : <span style={{ color: C.oxide }}>free</span>}
+        <div style={{ gridColumn: narrow ? '1 / -1' : 2, fontFamily: FONT.num, fontWeight: 700,
+                      fontSize: 16, letterSpacing: '-0.2px', color: C.rust, marginTop: 10 }}>
+          {w.nextMove.label.charAt(0).toUpperCase() + w.nextMove.label.slice(1)}
+          {w.nextMove.costEth ? ` (${Number(w.nextMove.costEth).toFixed(4)} Ξ)` : ' (free)'}
+          {' and you take No. '}{w.nextMove.passes}
         </div>
       )}
       {focus && urgency}
