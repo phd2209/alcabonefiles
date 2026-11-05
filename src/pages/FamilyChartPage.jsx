@@ -14,7 +14,7 @@ import WantedPoster from '../components/wanted-poster/WantedPoster';
  */
 
 const WEEKLY_DIR = '/bureau-data/most-wanted';
-const FONTS = 'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Old+Standard+TT:wght@400;700&family=Oswald:wght@500;700&family=Roboto+Condensed:ital,wght@0,400;0,700;1,700&family=Special+Elite&family=Caveat:wght@600;700&display=swap';
+export const FONTS = 'https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Old+Standard+TT:wght@400;700&family=Oswald:wght@500;700&family=Roboto+Condensed:ital,wght@0,400;0,700;1,700&family=Special+Elite&family=Caveat:wght@600;700&display=swap';
 
 const FAMILY_COLOR = {
   Rambones: '#c2452d', Napolebones: '#e0821f', Corlebones: '#2f6f73', Gambones: '#6a46a8',

@@ -76,7 +76,10 @@ export default function WantedPoster({ m, name, role, img, supply, codes, family
       <div onClick={(e) => e.stopPropagation()} style={{ width: PW * scale, margin: '0 auto' }}>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap' }}>
           <button type="button" onClick={onClose} style={btn}>← BACK TO THE CHART</button>
-          <button type="button" onClick={download} disabled={busy} style={btn}>{busy ? 'DEVELOPING…' : 'DOWNLOAD PNG'}</button>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <a href={`/file/${m.id}`} style={{ ...btn, textDecoration: 'none' }}>PULL HIS FILE →</a>
+            <button type="button" onClick={download} disabled={busy} style={btn}>{busy ? 'DEVELOPING…' : 'DOWNLOAD PNG'}</button>
+          </div>
         </div>
         {error && <p style={{ color: '#efe6d2', fontFamily: 'monospace' }}>{error}</p>}
         <div style={{ width: PW * scale, height: PH * scale, overflow: 'hidden' }}>
